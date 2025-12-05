@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資産形成シミュレーションツール - FP向け</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Yu Gothic', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 0;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        .result-section {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .input-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .chart-container {
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .summary-card.highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .summary-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.3);
+        }
+        
+        .download-btn:active {
+            transform: translateY(0);
+        }
+        
+        .download-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 資産形成シミュレーションツール</h1>
+            <p>お客様との面談で即座に将来の資産推移を可視化</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <h2 style="margin-bottom: 20px; color: #333;">シミュレーション条件</h2>
+                
+                <div class="form-group">
+                    <label for="customerName">お客様名</label>
+                    <input type="text" id="customerName" placeholder="例：山田太郎" value="お客様">
+                </div>
+                
+                <div class="form-group">
+                    <label for="currentAge">現在の年齢（歳）</label>
+                    <input type="number" id="currentAge" placeholder="例：35" value="35" min="20" max="80">
+                    <div class="input-hint">20〜80歳で入力してください</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="currentAsset">現在の資産額（円）</label>
+                    <input type="number" id="currentAsset" placeholder="例：1000000" value="1000000" min="0">
+                    <div class="input-hint">0円以上で入力してください</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="monthlyInvestment">毎月の積立額（円）</label>
+                    <input type="number" id="monthlyInvestment" placeholder="例：50000" value="50000" min="0">
+                    <div class="input-hint">0円以上で入力してください</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="annualReturn">想定年間運用利率（%）</label>
+                    <input type="number" id="annualReturn" placeholder="例：5" value="5" min="0" max="20" step="0.1">
+                    <div class="input-hint">0〜20%で入力してください</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="targetAge">シミュレーション終了年齢（歳）</label>
+                    <input type="number" id="targetAge" placeholder="例：80" value="80" min="30" max="100">
+                    <div class="input-hint">30〜100歳で入力してください</div>
+                </div>
+                
+                <hr style="margin: 25px 0; border: none; border-top: 2px solid #e0e0e0;">
+                <h3 style="margin-bottom: 15px; color: #666; font-size: 14px;">⚙️ 資産取り崩し設定（任意）</h3>
+                
+                <div class="form-group">
+                    <label for="withdrawalAge">取り崩し開始年齢（歳）</label>
+                    <input type="number" id="withdrawalAge" placeholder="例：65（空欄で取り崩しなし）" min="30" max="100">
+                    <div class="input-hint">空欄の場合は取り崩しなし</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="monthlyWithdrawal">毎月の取り崩し額（円）</label>
+                    <input type="number" id="monthlyWithdrawal" placeholder="例：200000" value="0" min="0">
+                    <div class="input-hint">取り崩し開始年齢から毎月引き出す金額</div>
+                </div>
+                
+                <button class="calculate-btn" onclick="calculate()">📊 シミュレーション実行</button>
+            </div>
+            
+            <div class="result-section">
+                <div id="results" class="hidden">
+                    <h2 style="margin-bottom: 20px; color: #333;">シミュレーション結果</h2>
+                    
+                    <div class="summary-cards">
+                        <div class="summary-card highlight">
+                            <h3>予想資産額</h3>
+                            <div class="value" id="finalAsset">-</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>元本（積立累計）</h3>
+                            <div class="value" id="totalPrincipal">-</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>運用益</h3>
+                            <div class="value" id="totalGain">-</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 20px 0;">
+                        <button class="download-btn" onclick="downloadPDF()">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            PDFレポートをダウンロード
+                        </button>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="assetChart"></canvas>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>年齢</th>
+                                    <th>予想資産額</th>
+                                    <th>元本</th>
+                                    <th>運用益</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="placeholder" style="text-align: center; padding: 100px 20px; color: #999;">
+                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 20px;">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <h3>条件を入力してシミュレーションを実行してください</h3>
+                    <p style="margin-top: 10px;">左側のフォームに必要な情報を入力し、<br>「シミュレーション実行」ボタンをクリックしてください。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let assetChart = null;
+        
+        function formatCurrency(amount) {
+            if (amount >= 100000000) {
+                return (amount / 100000000).toFixed(1) + '億円';
+            } else if (amount >= 10000) {
+                return Math.round(amount / 10000) + '万円';
+            } else {
+                return amount.toLocaleString() + '円';
+            }
+        }
+        
+        function calculateAssetGrowth(currentAge, currentAsset, monthlyInvestment, annualReturn, withdrawalAge, monthlyWithdrawal, targetAge) {
+            const monthlyRate = annualReturn / 100 / 12;
+            const years = targetAge - currentAge;
+            
+            const ages = [];
+            const assets = [];
+            const principals = [];
+            
+            let currentTotal = currentAsset;
+            let totalInvestment = currentAsset;
+            
+            for (let year = 0; year <= years; year++) {
+                const age = currentAge + year;
+                ages.push(age);
+                assets.push(currentTotal);
+                principals.push(totalInvestment);
+                
+                if (year < years) {
+                    for (let month = 0; month < 12; month++) {
+                        currentTotal = currentTotal * (1 + monthlyRate);
+                        
+                        // 取り崩し開始前：積立
+                        if (!withdrawalAge || age < withdrawalAge) {
+                            currentTotal += monthlyInvestment;
+                            totalInvestment += monthlyInvestment;
+                        }
+                        // 取り崩し開始後：取り崩し
+                        else {
+                            currentTotal -= monthlyWithdrawal;
+                            totalInvestment -= monthlyWithdrawal;
+                        }
+                        
+                        // 資産がマイナスにならないように
+                        if (currentTotal < 0) {
+                            currentTotal = 0;
+                        }
+                    }
+                }
+            }
+            
+            return { ages, assets, principals };
+        }
+        
+        function calculate() {
+            // 入力値の取得
+            const customerName = document.getElementById('customerName').value || 'お客様';
+            const currentAge = parseInt(document.getElementById('currentAge').value);
+            const currentAsset = parseFloat(document.getElementById('currentAsset').value);
+            const monthlyInvestment = parseFloat(document.getElementById('monthlyInvestment').value);
+            const annualReturn = parseFloat(document.getElementById('annualReturn').value);
+            const targetAge = parseInt(document.getElementById('targetAge').value);
+            
+            // 取り崩し情報の取得
+            const withdrawalAgeInput = document.getElementById('withdrawalAge').value;
+            const withdrawalAge = withdrawalAgeInput ? parseInt(withdrawalAgeInput) : null;
+            const monthlyWithdrawal = parseFloat(document.getElementById('monthlyWithdrawal').value) || 0;
+            
+            // バリデーション
+            if (isNaN(currentAge) || isNaN(currentAsset) || isNaN(monthlyInvestment) || isNaN(annualReturn) || isNaN(targetAge)) {
+                alert('すべての項目を正しく入力してください。');
+                return;
+            }
+            
+            if (currentAge >= targetAge) {
+                alert('終了年齢は現在の年齢より大きくしてください。');
+                return;
+            }
+            
+            if (withdrawalAge && withdrawalAge <= currentAge) {
+                alert('取り崩し開始年齢は現在の年齢より大きくしてください。');
+                return;
+            }
+            
+            // 計算実行
+            const result = calculateAssetGrowth(currentAge, currentAsset, monthlyInvestment, annualReturn, withdrawalAge, monthlyWithdrawal, targetAge);
+            
+            // 結果表示
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            
+            const finalAsset = result.assets[result.assets.length - 1];
+            const finalPrincipal = result.principals[result.principals.length - 1];
+            const finalGain = finalAsset - finalPrincipal;
+            
+            document.getElementById('finalAsset').textContent = formatCurrency(finalAsset);
+            document.getElementById('totalPrincipal').textContent = formatCurrency(finalPrincipal);
+            document.getElementById('totalGain').textContent = formatCurrency(finalGain);
+            
+            // グラフ描画
+            drawChart(result, customerName, withdrawalAge, targetAge);
+            
+            // テーブル作成
+            createTable(result);
+        }
+        
+        function drawChart(result, customerName, withdrawalAge, targetAge) {
+            const ctx = document.getElementById('assetChart').getContext('2d');
+            
+            if (assetChart) {
+                assetChart.destroy();
+            }
+            
+            assetChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: result.ages,
+                    datasets: [
+                        {
+                            label: '予想資産額',
+                            data: result.assets.map(a => Math.round(a / 10000)),
+                            borderColor: 'rgb(102, 126, 234)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3,
+                            pointRadius: 2,
+                            pointHoverRadius: 5
+                        },
+                        {
+                            label: '元本（積立累計）',
+                            data: result.principals.map(p => Math.round(p / 10000)),
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 1,
+                            pointHoverRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: `${customerName}様 - ${targetAge}歳までの資産推移${withdrawalAge ? ' (取り崩し: ' + withdrawalAge + '歳～)' : ''}`,
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        annotation: withdrawalAge ? {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: withdrawalAge,
+                                    xMax: withdrawalAge,
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        display: true,
+                                        content: `取り崩し開始（${withdrawalAge}歳）`,
+                                        position: 'start'
+                                    }
+                                }
+                            }
+                        } : {},
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed.y.toLocaleString() + '万円';
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + '万円';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: '資産額（万円）'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '年齢（歳）'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createTable(result) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+            
+            // 5年ごとに表示
+            for (let i = 0; i < result.ages.length; i++) {
+                if (i === 0 || (result.ages[i] - result.ages[0]) % 5 === 0) {
+                    const row = tbody.insertRow();
+                    const age = result.ages[i];
+                    const asset = result.assets[i];
+                    const principal = result.principals[i];
+                    const gain = asset - principal;
+                    
+                    row.insertCell(0).textContent = age + '歳';
+                    row.insertCell(1).textContent = formatCurrency(asset);
+                    row.insertCell(2).textContent = formatCurrency(principal);
+                    row.insertCell(3).textContent = formatCurrency(gain);
+                }
+            }
+        }
+        
+        async function downloadPDF() {
+            const results = document.getElementById('results');
+            if (results.classList.contains('hidden')) {
+                alert('まずシミュレーションを実行してください。');
+                return;
+            }
+            
+            // ローディング表示
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> PDF生成中...';
+            btn.disabled = true;
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                // ページ設定
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const margin = 15;
+                
+                // タイトル
+                pdf.setFontSize(24);
+                pdf.setTextColor(102, 126, 234);
+                pdf.text('資産形成シミュレーションレポート', pageWidth / 2, 20, { align: 'center' });
+                
+                // お客様名
+                const customerName = document.getElementById('customerName').value || 'お客様';
+                pdf.setFontSize(16);
+                pdf.setTextColor(0, 0, 0);
+                pdf.text(`${customerName}様`, pageWidth / 2, 30, { align: 'center' });
+                
+                // サマリー情報
+                pdf.setFontSize(14);
+                pdf.setTextColor(51, 51, 51);
+                pdf.text('シミュレーション結果', margin, 45);
+                
+                pdf.setFontSize(10);
+                const finalAsset = document.getElementById('finalAsset').textContent;
+                const totalPrincipal = document.getElementById('totalPrincipal').textContent;
+                const totalGain = document.getElementById('totalGain').textContent;
+                
+                let yPos = 55;
+                pdf.text(`予想資産額: ${finalAsset}`, margin, yPos);
+                yPos += 7;
+                pdf.text(`元本（積立累計）: ${totalPrincipal}`, margin, yPos);
+                yPos += 7;
+                pdf.text(`運用益: ${totalGain}`, margin, yPos);
+                yPos += 15;
+                
+                // グラフを画像としてキャプチャ
+                const canvas = document.getElementById('assetChart');
+                const chartImage = canvas.toDataURL('image/png');
+                const chartWidth = pageWidth - (margin * 2);
+                const chartHeight = (chartWidth * canvas.height) / canvas.width;
+                
+                if (yPos + chartHeight > pageHeight - margin) {
+                    pdf.addPage();
+                    yPos = margin;
+                }
+                
+                pdf.addImage(chartImage, 'PNG', margin, yPos, chartWidth, chartHeight);
+                yPos += chartHeight + 10;
+                
+                // テーブルデータ
+                if (yPos > pageHeight - 60) {
+                    pdf.addPage();
+                    yPos = margin;
+                }
+                
+                pdf.setFontSize(12);
+                pdf.text('資産推移表（5年ごと）', margin, yPos);
+                yPos += 8;
+                
+                // テーブルヘッダー
+                pdf.setFontSize(9);
+                pdf.setFillColor(248, 249, 250);
+                pdf.rect(margin, yPos - 5, pageWidth - (margin * 2), 7, 'F');
+                pdf.text('年齢', margin + 5, yPos);
+                pdf.text('予想資産額', margin + 30, yPos);
+                pdf.text('元本', margin + 80, yPos);
+                pdf.text('運用益', margin + 130, yPos);
+                yPos += 8;
+                
+                // テーブル行データ
+                const tableBody = document.getElementById('dataTableBody');
+                const rows = tableBody.getElementsByTagName('tr');
+                let rowCount = 0;
+                
+                for (let i = 0; i < Math.min(rows.length, 10); i++) {
+                    if (yPos > pageHeight - 15) {
+                        pdf.addPage();
+                        yPos = margin;
+                    }
+                    
+                    const cells = rows[i].getElementsByTagName('td');
+                    pdf.text(cells[0].textContent, margin + 5, yPos);
+                    pdf.text(cells[1].textContent, margin + 30, yPos);
+                    pdf.text(cells[2].textContent, margin + 80, yPos);
+                    pdf.text(cells[3].textContent, margin + 130, yPos);
+                    yPos += 7;
+                    rowCount++;
+                }
+                
+                // フッター
+                const date = new Date().toLocaleString('ja-JP');
+                pdf.setFontSize(8);
+                pdf.setTextColor(128, 128, 128);
+                pdf.text(`作成日時: ${date}`, margin, pageHeight - 10);
+                
+                // PDF保存
+                const filename = `資産シミュレーション_${customerName}_${new Date().getTime()}.pdf`;
+                pdf.save(filename);
+                
+                // 成功メッセージ
+                btn.innerHTML = '✅ ダウンロード完了！';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+                
+            } catch (error) {
+                console.error('PDF生成エラー:', error);
+                alert('PDF生成中にエラーが発生しました。');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>
