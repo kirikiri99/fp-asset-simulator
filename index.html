@@ -6,42 +6,6 @@
     <title>資産形成シミュレーションツール - FP向け</title>
     <style>
         
-        @media print {
-            body {
-                background: white !important;
-                padding: 0 !important;
-            }
-            
-            .container {
-                box-shadow: none !important;
-                border-radius: 0 !important;
-            }
-            
-            .header {
-                background: white !important;
-                color: #333 !important;
-                border-bottom: 2px solid #667eea;
-            }
-            
-            .input-section {
-                display: none !important;
-            }
-            
-            .content {
-                grid-template-columns: 1fr !important;
-            }
-            
-            .result-section {
-                padding: 20px !important;
-            }
-            
-            button {
-                display: none !important;
-            }
-            
-            .download-btn {
-                display: none !important;
-            }
         }
         * {
             margin: 0;
@@ -115,7 +79,7 @@
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             transition: all 0.3s;
         }
         
@@ -138,7 +102,7 @@
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
@@ -248,9 +212,9 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             margin-top: 20px;
@@ -270,8 +234,8 @@
         }
         
         .download-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -368,12 +332,6 @@
                     
                     <div style="text-align: center; margin: 20px 0;">
                         <button class="download-btn" onclick="downloadPDF()">
-                        <button class="download-btn" onclick="printReport()" style="margin-left: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                            </svg>
-                            🖨️ 印刷（PDF保存）
-                        </button>
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
@@ -392,7 +350,7 @@
                             </svg>
                             💰 最大取り崩し可能額
                         </h3>
-                        <p style="margin: 0; font-size: 16px; line-height: 1.6;" id="maxWithdrawalText"></p>
+                        <p style="margin: 0; font-size: 14px; line-height: 1.6;" id="maxWithdrawalText"></p>
                     </div>
                     
                     <div class="table-container">
@@ -750,9 +708,6 @@
         }
         
         // ブラウザ印刷機能でPDF保存
-        function printReport() {
-            window.print();
-        }
     </script>
     <style>
         
