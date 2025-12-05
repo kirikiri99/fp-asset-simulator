@@ -244,7 +244,7 @@
     <div class="container">
         <div class="header">
             <h1>💰 資産形成シミュレーションツール</h1>
-            <p>お客様との面談で即座に将来の資産推移を可視化</p>
+            <p>将来の資産推移を可視化</p>
         </div>
         
         <div class="content">
@@ -284,6 +284,12 @@
                     <label for="targetAge">シミュレーション終了年齢（歳）</label>
                     <input type="number" id="targetAge" placeholder="例：80" value="80" min="30" max="100">
                     <div class="input-hint">30〜100歳で入力してください</div>
+                
+                <div class="form-group">
+                    <label for="targetAsset">目標最終資産額（円）</label>
+                    <input type="number" id="targetAsset" placeholder="例：50000000（任意）" min="0">
+                    <div class="input-hint">目標金額を入力すると達成度を表示（任意）</div>
+                </div>
                 </div>
                 
                 <hr style="margin: 25px 0; border: none; border-top: 2px solid #e0e0e0;">
@@ -334,6 +340,16 @@
                     
                     <div class="chart-container">
                         <canvas id="assetChart"></canvas>
+                    </div>
+                    
+                    <div id="maxWithdrawalInfo" style="display:none; margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px; color: white; box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);">
+                        <h3 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center;">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 10px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            💰 最大取り崩し可能額
+                        </h3>
+                        <p style="margin: 0; font-size: 16px; line-height: 1.6;" id="maxWithdrawalText"></p>
                     </div>
                     
                     <div class="table-container">
@@ -470,6 +486,45 @@
             drawChart(result, customerName, withdrawalAge, targetAge);
             
             // テーブル作成
+            
+            // 最大取り崩し額の計算と表示
+            const targetAsset = parseFloat(document.getElementById("targetAsset").value) || 0;
+            const maxWithdrawalInfo = document.getElementById("maxWithdrawalInfo");
+            const maxWithdrawalText = document.getElementById("maxWithdrawalText");
+            
+            if (withdrawalAge && withdrawalAge < targetAge) {
+                const yearsOfWithdrawal = targetAge - withdrawalAge;
+                const monthsOfWithdrawal = yearsOfWithdrawal * 12;
+                
+                // 取り崩し開始時の資産額を計算
+                const resultAtWithdrawal = calculateAssetGrowth(currentAge, currentAsset, monthlyInvestment, annualReturn, null, 0, withdrawalAge);
+                const assetAtWithdrawal = resultAtWithdrawal.assets[resultAtWithdrawal.assets.length - 1];
+                
+                // 目標最終資産額を考慮
+                const availableForWithdrawal = targetAsset > 0 ? assetAtWithdrawal - targetAsset : assetAtWithdrawal;
+                
+                // 最大月額取り崩し額を計算（運用しながら取り崩す場合）
+                const monthlyRate = annualReturn / 100 / 12;
+                let maxMonthlyWithdrawal;
+                
+                if (monthlyRate > 0.0001) {
+                    // 運用益を考慮した年金現価係数の逆数
+                    const annuityFactor = (1 - Math.pow(1 + monthlyRate, -monthsOfWithdrawal)) / monthlyRate;
+                    maxMonthlyWithdrawal = availableForWithdrawal / annuityFactor;
+                } else {
+                    // 運用なしの場合
+                    maxMonthlyWithdrawal = availableForWithdrawal / monthsOfWithdrawal;
+                }
+                
+                if (targetAsset > 0) {
+                    maxWithdrawalText.innerHTML = `<strong>${withdrawalAge}歳から${targetAge}歳まで</strong>の<strong>${yearsOfWithdrawal}年間</strong>で、<strong>最終的に${formatCurrency(targetAsset)}を残す</strong>場合、<br>毎月最大 <span style="font-size: 22px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${formatCurrency(maxMonthlyWithdrawal)}</span> まで取り崩すことができます。<br><span style="font-size: 14px; opacity: 0.9;">（${withdrawalAge}歳時点の予想資産額: ${formatCurrency(assetAtWithdrawal)}）</span>`;
+                } else {
+                    maxWithdrawalText.innerHTML = `<strong>${withdrawalAge}歳から${targetAge}歳まで</strong>の<strong>${yearsOfWithdrawal}年間</strong>で、<br>毎月最大 <span style="font-size: 22px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${formatCurrency(maxMonthlyWithdrawal)}</span> まで取り崩すことができます。<br><span style="font-size: 14px; opacity: 0.9;">（${withdrawalAge}歳時点の予想資産額: ${formatCurrency(assetAtWithdrawal)}、運用利率${annualReturn}%で継続運用）</span>`;
+                }
+                maxWithdrawalInfo.style.display = "block";
+            } else {
+                maxWithdrawalInfo.style.display = "none";
+            }
             createTable(result);
         }
         
@@ -740,3 +795,4 @@
     </style>
 </body>
 </html>
+                                 
