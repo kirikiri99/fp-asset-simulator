@@ -414,14 +414,15 @@
                 
                 if (year < years) {
                     for (let month = 0; month < 12; month++) {
+                        // 常に運用益を計算（運用は継続）
                         currentTotal = currentTotal * (1 + monthlyRate);
                         
-                        // 取り崩し開始前：積立
+                        // 取り崩し開始前：積立あり
                         if (!withdrawalAge || age < withdrawalAge) {
                             currentTotal += monthlyInvestment;
                             totalInvestment += monthlyInvestment;
                         }
-                        // 取り崩し開始後：取り崩し
+                        // 取り崩し開始後：積立なし、取り崩しのみ
                         else {
                             currentTotal -= monthlyWithdrawal;
                             totalInvestment -= monthlyWithdrawal;
@@ -437,7 +438,6 @@
             
             return { ages, assets, principals };
         }
-        
         function calculate() {
             // 入力値の取得
             const customerName = document.getElementById('customerName').value || 'お客様';
@@ -487,7 +487,6 @@
             drawChart(result, customerName, withdrawalAge, targetAge);
             
             // テーブル作成
-            
             // 最大取り崩し額の計算と表示
             const targetAsset = parseFloat(document.getElementById("targetAsset").value) || 0;
             const maxWithdrawalInfo = document.getElementById("maxWithdrawalInfo");
@@ -504,7 +503,7 @@
                 // 目標最終資産額を考慮
                 const availableForWithdrawal = targetAsset > 0 ? assetAtWithdrawal - targetAsset : assetAtWithdrawal;
                 
-                // 最大月額取り崩し額を計算（運用しながら取り崩す場合）
+                // 最大月額取り崩し額を計算（運用継続、積立なし）
                 const monthlyRate = annualReturn / 100 / 12;
                 let maxMonthlyWithdrawal;
                 
@@ -518,15 +517,14 @@
                 }
                 
                 if (targetAsset > 0) {
-                    maxWithdrawalText.innerHTML = `<strong>${withdrawalAge}歳から${targetAge}歳まで</strong>の<strong>${yearsOfWithdrawal}年間</strong>で、<strong>最終的に${formatCurrency(targetAsset)}を残す</strong>場合、<br>毎月最大 <span style="font-size: 22px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${formatCurrency(maxMonthlyWithdrawal)}</span> まで取り崩すことができます。<br><span style="font-size: 14px; opacity: 0.9;">（${withdrawalAge}歳時点の予想資産額: ${formatCurrency(assetAtWithdrawal)}）</span>`;
+                    maxWithdrawalText.innerHTML = `<strong>${withdrawalAge}歳から${targetAge}歳まで</strong>の<strong>${yearsOfWithdrawal}年間</strong>で、<strong>最終的に${formatCurrency(targetAsset)}を残す</strong>場合、<br>毎月最大 <span style="font-size: 22px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${formatCurrency(maxMonthlyWithdrawal)}</span> まで取り崩すことができます。<br><span style="font-size: 14px; opacity: 0.9;">（${withdrawalAge}歳時点の予想資産額: ${formatCurrency(assetAtWithdrawal)}、運用は継続・追加投資なし）</span>`;
                 } else {
-                    maxWithdrawalText.innerHTML = `<strong>${withdrawalAge}歳から${targetAge}歳まで</strong>の<strong>${yearsOfWithdrawal}年間</strong>で、<br>毎月最大 <span style="font-size: 22px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${formatCurrency(maxMonthlyWithdrawal)}</span> まで取り崩すことができます。<br><span style="font-size: 14px; opacity: 0.9;">（${withdrawalAge}歳時点の予想資産額: ${formatCurrency(assetAtWithdrawal)}、運用利率${annualReturn}%で継続運用）</span>`;
+                    maxWithdrawalText.innerHTML = `<strong>${withdrawalAge}歳から${targetAge}歳まで</strong>の<strong>${yearsOfWithdrawal}年間</strong>で、<br>毎月最大 <span style="font-size: 22px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${formatCurrency(maxMonthlyWithdrawal)}</span> まで取り崩すことができます。<br><span style="font-size: 14px; opacity: 0.9;">（${withdrawalAge}歳時点の予想資産額: ${formatCurrency(assetAtWithdrawal)}、運用利率${annualReturn}%で継続運用・追加投資なし）</span>`;
                 }
                 maxWithdrawalInfo.style.display = "block";
             } else {
                 maxWithdrawalInfo.style.display = "none";
             }
-            createTable(result);
         }
         
         function drawChart(result, customerName, withdrawalAge, targetAge) {
