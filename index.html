@@ -487,6 +487,7 @@
             drawChart(result, customerName, withdrawalAge, targetAge);
             
             // テーブル作成
+            createTable(result);
             // 最大取り崩し額の計算と表示
             const targetAsset = parseFloat(document.getElementById("targetAsset").value) || 0;
             const maxWithdrawalInfo = document.getElementById("maxWithdrawalInfo");
